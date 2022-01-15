@@ -2,7 +2,12 @@ var title = document.querySelector('.title');
 var courseFeatureElements = document.querySelectorAll('.course-feature');
 var button = document.querySelector('button');
 
-// navigator.serviceWorker.register('/sw.js');
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+  .then(_ => {
+    console.log('sw register')
+  })
+}
 
 function animate() {
   title.classList.remove('animate-in');

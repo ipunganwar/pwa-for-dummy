@@ -50,6 +50,7 @@ in your index.html add this tag:
 
 ### Source
 - https://web.dev/add-manifest/?utm_source=devtools
+- https://web.dev/customize-install/
 
 ## "Listenable" Events in Service Worker
 | Event | Source |
@@ -59,3 +60,12 @@ in your index.html add this tag:
 | Notification Interaction | User interacts with displayed notification |
 | Background Sync | Service Worker receives background sync event (e.g. Internet Connection was restored) |
 | Service Worker Livecycle | Service Worker Phase changes |
+
+## Service Worker Lifecycle
+- Install - Trigger by the browser
+- Activate - Trigger by the browser
+- Fetch - Trigger by your web-app
+
+### Service Worker FAQ
+**Is the Service Worker installed everytime I refresh the page?**
+No, whilst the browser does of course (naturally) execute the `register()`  code everytime you refresh the page, it won't install the service worker if the service worker file hasn't changed. If it only changed by 1 byte though, it'll install it as a new service worker (but wait with the activation as explained).
