@@ -14,7 +14,7 @@ Core Building Block:
 
 
 ## Manifest
-- Manifest Property (JSON)
+- Manifest Property is metadata of your web app in JSON format
 
 | Property Name | Value | Sample |
 |---------------|-------|
@@ -27,4 +27,7 @@ Core Building Block:
 | theme_color | Theme color (e.g ont top bar in task switcher) | "theme_color":"fff" |
 | description | Description (e.g. as favorite) | "description": "Test running until you sweaty!" |
 | dir | Read direction of your app | "dir": "ltr" |
+| lang | Main language of your app | "lang": "en_US" |
+| orientation | Set (and enfore) default orientation | "orientation":"landscape"|
+| icons | Configure icons (e.g. homescreen) | "icons": [Arrays of Object] |
 
