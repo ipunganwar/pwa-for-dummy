@@ -67,5 +67,5 @@ in your index.html add this tag:
 - Fetch - Trigger by your web-app
 
 ### Service Worker FAQ
-**Is the Service Worker installed everytime I refresh the page?**
+**Is the Service Worker installed everytime I refresh the page?** <br>
 No, whilst the browser does of course (naturally) execute the `register()`  code everytime you refresh the page, it won't install the service worker if the service worker file hasn't changed. If it only changed by 1 byte though, it'll install it as a new service worker (but wait with the activation as explained).
