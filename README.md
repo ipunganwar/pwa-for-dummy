@@ -31,3 +31,5 @@ Core Building Block:
 | orientation | Set (and enfore) default orientation | "orientation":"landscape"|
 | icons | Configure icons (e.g. homescreen) | "icons": [Arrays of Object] |
 
+### Source
+- https://web.dev/add-manifest/?utm_source=devtools
