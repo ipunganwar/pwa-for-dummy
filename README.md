@@ -17,7 +17,7 @@ Core Building Block:
 - Manifest Property is metadata of your web app in JSON format
 
 | Property Name | Value | Sample |
-|---------------|-------|
+|---------------|-------|--------|
 | name          | Long name of app (e.g. on SplashScreen) | "name": "Test App01"|
 | short_name    | Short name of app (e.g. below icon)   |   "short_name": "App01"|
 | start_url     | Which page to load on startup |   "start_url": "/index.html"  |
