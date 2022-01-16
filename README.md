@@ -93,3 +93,19 @@ self.addEventListener('fetch', function(event) {
   );
 });
 ```
+
+## Network With Cache Fallback 
+get from network first, if error will get from cache:
+```
+self.addEventListener('fetch', function(event) {
+    event.respondWith(
+        fetch(event.request)
+        .catch(err => {
+            caches.match(event.request)
+            .then(function(response) {
+                return response;
+            })
+        })
+    )
+});
+```
