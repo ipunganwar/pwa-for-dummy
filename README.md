@@ -101,11 +101,24 @@ self.addEventListener('fetch', function(event) {
     event.respondWith(
         fetch(event.request)
         .catch(err => {
-            caches.match(event.request)
-            .then(function(response) {
-                return response;
-            })
+            return caches.match(event.request)
         })
     )
+});
+```
+
+## Cache With Offline File Provide
+if get from cache has error, we can provide with offline file fallback:
+```
+self.addEventListener('fetch', function(event) {
+   event.respondWith(
+     caches.match(event.request)
+     .catch(err => {
+         return caches.open('static-cache-v1')
+            .then(cache => {
+                return cache.match('/offline.html')
+            })
+     })
+   );
 });
 ```
