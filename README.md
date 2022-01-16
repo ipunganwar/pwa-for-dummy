@@ -12,6 +12,10 @@ Core Building Block:
 - Geolocation API
 - Media API - Access Device Camera and Microphone
 
+### Service Worker FAQ
+**Is the Service Worker installed everytime I refresh the page?** <br>
+No, whilst the browser does of course (naturally) execute the `register()`  code everytime you refresh the page, it won't install the service worker if the service worker file hasn't changed. If it only changed by 1 byte though, it'll install it as a new service worker (but wait with the activation as explained).
+
 
 ## Manifest
 - Manifest Property is metadata of your web app in JSON format
@@ -51,6 +55,8 @@ in your index.html add this tag:
 ### Source
 - https://web.dev/add-manifest/?utm_source=devtools
 - https://web.dev/customize-install/
+- https://jakearchibald.com/2014/offline-cookbook/#cache-persistence
+- https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API
 
 ## "Listenable" Events in Service Worker
 | Event | Source |
@@ -66,6 +72,24 @@ in your index.html add this tag:
 - Activate - Trigger by the browser
 - Fetch - Trigger by your web-app
 
-### Service Worker FAQ
-**Is the Service Worker installed everytime I refresh the page?** <br>
-No, whilst the browser does of course (naturally) execute the `register()`  code everytime you refresh the page, it won't install the service worker if the service worker file hasn't changed. If it only changed by 1 byte though, it'll install it as a new service worker (but wait with the activation as explained).
+
+# Service Worker Strategy
+## Cache Only
+it's similar look like this behaviour, matches with cache in cache-storage:
+```
+self.addEventListener('fetch', function(event) {
+   event.respondWith(
+     caches.match(event.request)
+   );
+});
+```
+
+## Network Only
+it's similar look like this behaviour, only get from fetch request:
+```
+self.addEventListener('fetch', function(event) {
+  event.respondWith(
+    fetch(event.request)
+  );
+});
+```
