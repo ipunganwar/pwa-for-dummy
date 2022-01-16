@@ -73,7 +73,7 @@ in your index.html add this tag:
 - Fetch - Trigger by your web-app
 
 
-# Service Worker Strategy
+# Service Worker Strategy in Advanced
 ## Cache Only
 it's similar look like this behaviour, matches with cache in cache-storage:
 ```
