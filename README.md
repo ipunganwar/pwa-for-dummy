@@ -116,7 +116,7 @@ self.addEventListener('fetch', function(event) {
      .catch(err => {
          return caches.open('static-cache-v1')
             .then(cache => {
-                return cache.match('/offline.html')
+                return cache.match('/offline.html') ---> this the offline file we had been provide
             })
      })
    );
