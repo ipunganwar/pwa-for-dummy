@@ -155,3 +155,45 @@ self.addEventListener('fetch', function(event) {
    );
 });
 ```
+
+## Cache Then Network
+returning most fastest response e.g. from Cache or Server
+
+```
+const url = 'https://httpbin.org/get'
+
+self.addEventListener('fetch', function(event) {
+    const promise1 = new Promise((resolve, reject) => {
+        caches.match(url).then(response => {
+            resolve(response)
+        })
+    })
+
+    const promise2 = new Promise((resolve, reject) => {
+        fetch(url).then(response => {
+            resolve(response)
+        })
+    })
+
+    Promise.race([promise1, promise2]).then(response => {
+        return response
+    })
+})
+```
+
+## Cache Then Network & Dynamic Caches
+This one strategy has one cons, your cache will save redundant cache-file and multiply the cache every time you made a request from web.
+```
+self.addEventListener('fetch', function(event) {
+  event.respondWith(
+    caches.open(CACHE_DYNAMIC_NAME)
+    .then(cache => {
+      return fetch(event.request)
+      .then(response => {
+        cache.put(event.request, res.clone())
+        return response
+      })
+    })
+  );
+});
+```
