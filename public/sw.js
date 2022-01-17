@@ -1,5 +1,5 @@
 
-var CACHE_STATIC_NAME = 'static-v5';
+var CACHE_STATIC_NAME = 'static-v7';
 var CACHE_DYNAMIC_NAME = 'dynamic-v2';
 
 self.addEventListener('install', function(event) {
@@ -44,7 +44,7 @@ self.addEventListener('activate', function(event) {
   return self.clients.claim();
 });
 
-// *** STRATEGY WITH OFFLINE FILE FALLBACK
+// *** OFFLINE-FALLBACK
 
 // self.addEventListener('fetch', function(event) {
 //   event.respondWith(
@@ -73,10 +73,95 @@ self.addEventListener('activate', function(event) {
 // });
 
 
-// *** STRATEGY CACHE ONLY
+// *** CACHE-ONLY
+// self.addEventListener('fetch', function(event) {
+//   event.respondWith(
+//     caches.match(event.request)
+//   );
+// });
 
+// *** NETWORK-ONLY
+// self.addEventListener('fetch', function(event) {
+//   event.respondWith(
+//     fetch(event.request)
+//   );
+// });
+
+// *** NETWORK WITH CACHE FALLBACK
+// self.addEventListener('fetch', function(event) {
+//   event.respondWith(
+//     fetch(event.request)
+//     .then(res => {
+//       return caches.open(CACHE_DYNAMIC_NAME)
+//               .then(function(cache) {
+//                 cache.put(event.request.url, res.clone());
+//                  return res;
+//              })
+//     })
+//     .catch(err => {
+//         return caches.match(event.request)
+//     })
+//   )
+// })
+
+// *** CACHE Then Network & Dynamic Caches
+// self.addEventListener('fetch', function(event) {
+//   event.respondWith(
+//     caches.open(CACHE_DYNAMIC_NAME)
+//     .then(cache => {
+//       return fetch(event.request)
+//       .then(response => {
+//         cache.put(event.request, response.clone())
+//         return response
+//       })
+//     })
+//   );
+// });
+
+
+// *** CACHE Then Network And Support Offline Fallback
 self.addEventListener('fetch', function(event) {
-  event.respondWith(
-    caches.match(event.request)
-  );
+  const url = 'https://httpbin.org/get'
+
+  if (event.request.url.indexOf(url) > -1) {
+    event.respondWith(
+      caches.open(CACHE_DYNAMIC_NAME)
+      .then(cache => {
+        return fetch(event.request)
+        .then(response => {
+          cache.put(event.request, response.clone())
+          return response
+        })
+      })
+    );
+  }
+
+  else {
+    // Fallback with offline strategy
+
+    event.respondWith(
+      caches.match(event.request)
+        .then(function(response) {
+          if (response) {
+            return response;
+          } else {
+            return fetch(event.request)
+              .then(function(res) {
+                return caches.open(CACHE_DYNAMIC_NAME)
+                  .then(function(cache) {
+                    cache.put(event.request.url, res.clone());
+                    return res;
+                  })
+              })
+              .catch(function(err) {
+                return caches.open(CACHE_STATIC_NAME)
+                .then(cache => {
+                  return cache.match('/offline.html')
+                })
+              });
+          }
+        })
+    );
+  }
+  
 });

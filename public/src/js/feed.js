@@ -41,6 +41,12 @@ function onSaveButtonClick (event) {
   }
 }
 
+function clearCard () {
+  while(sharedMomentsArea.hasChildNodes()) {
+    sharedMomentsArea.removeChild(sharedMomentsArea.lastChild)
+  }
+}
+
 function createCard() {
   var cardWrapper = document.createElement('div');
   cardWrapper.className = 'shared-moment-card mdl-card mdl-shadow--2dp';
@@ -60,20 +66,42 @@ function createCard() {
   cardSupportingText.textContent = 'In San Francisco';
   cardSupportingText.style.textAlign = 'center';
 
-  var cardSaveButton = document.createElement('button')
-  cardSaveButton.textContent = 'Save'
-  cardSupportingText.appendChild(cardSaveButton)
-  cardSaveButton.addEventListener('click', onSaveButtonClick)
+  // var cardSaveButton = document.createElement('button')
+  // cardSaveButton.textContent = 'Save'
+  // cardSupportingText.appendChild(cardSaveButton)
+  // cardSaveButton.addEventListener('click', onSaveButtonClick)
 
   cardWrapper.appendChild(cardSupportingText);
   componentHandler.upgradeElement(cardWrapper);
   sharedMomentsArea.appendChild(cardWrapper);
 }
 
-fetch('https://httpbin.org/get')
+const url = 'https://httpbin.org/get'
+let networkDataReceived = false
+
+fetch(url)
   .then(function(res) {
     return res.json();
   })
   .then(function(data) {
+    console.log('From Web')
+    networkDataReceived = true
+    clearCard()
     createCard();
   });
+
+if ('caches' in window) {
+  caches.match(url)
+  .then(res => {
+    if (res) {
+      return res.json();
+    }
+  })
+  .then(function(data) {
+    if (!networkDataReceived) {
+      console.log('From Caches')
+      clearCard()
+      createCard();
+    }
+  });
+}

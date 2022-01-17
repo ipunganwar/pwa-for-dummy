@@ -190,10 +190,60 @@ self.addEventListener('fetch', function(event) {
     .then(cache => {
       return fetch(event.request)
       .then(response => {
-        cache.put(event.request, res.clone())
+        cache.put(event.request, response.clone())
         return response
       })
     })
   );
+});
+```
+
+## Cache Then Network And Support Offline Fallback
+We have to config 2 condition, if url request match then return with first strategy, if fail we must provide with `Offline fallback`
+
+```
+self.addEventListener('fetch', function(event) {
+  const url = 'https://httpbin.org/get'
+
+  if (event.request.url.indexOf(url) > -1) {
+    event.respondWith(
+      caches.open(CACHE_DYNAMIC_NAME)
+      .then(cache => {
+        return fetch(event.request)
+        .then(response => {
+          cache.put(event.request, response.clone())
+          return response
+        })
+      })
+    );
+  }
+
+  else {
+    // Fallback with offline strategy
+
+    event.respondWith(
+      caches.match(event.request)
+        .then(function(response) {
+          if (response) {
+            return response;
+          } else {
+            return fetch(event.request)
+              .then(function(res) {
+                return caches.open(CACHE_DYNAMIC_NAME)
+                  .then(function(cache) {
+                    cache.put(event.request.url, res.clone());
+                    return res;
+                  })
+              })
+              .catch(function(err) {
+                return caches.open(CACHE_STATIC_NAME)
+                .then(cache => {
+                  return cache.match('/offline.html')
+                })
+              });
+          }
+        })
+    );
+  }
 });
 ```
