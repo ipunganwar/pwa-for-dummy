@@ -121,6 +121,25 @@ self.addEventListener('fetch', function(event) {
 });
 ```
 
+but we can enhancement the fallback like this one:
+```
+self.addEventListener('fetch', function(event) {
+    event.respondWith(
+        fetch(event.request)
+        .then(res => {
+            return caches.open(CACHE_DYNAMIC_NAME)
+                .then(cache => {
+                    cache.put(event.request.url, res.clone())
+                    return res
+                })
+        })
+        .catch(err => {
+            return caches.match(event.request)
+        })
+    )
+});
+```
+
 ## Cache With Offline File Provide
 if get from cache has error, we can provide with offline file fallback:
 ```
