@@ -74,6 +74,20 @@ in your index.html add this tag:
 
 
 # Service Worker Strategy in Advanced
+
+## Precache in Install
+in first install, do a cache in first time:
+```
+self.addEventListener('install', function(event) {
+    event.waitUntil(
+        caches.open('cache-name-here')
+            .then(cache => {
+                cache.addAll(['array-of-cache-file'])
+            })
+    )
+})
+```
+
 ## Cache Only
 it's similar look like this behaviour, matches with cache in cache-storage:
 ```
