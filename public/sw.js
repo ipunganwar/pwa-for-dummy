@@ -1,32 +1,53 @@
 
+importScripts('/src/js/idb.js')
+
 var CACHE_STATIC_NAME = 'static-v7';
 var CACHE_DYNAMIC_NAME = 'dynamic-v2';
-
+const STATIC_FILE = [
+  '/',
+  '/index.html',
+  '/offline.html',
+  '/src/js/app.js',
+  '/src/js/feed.js',
+  '/src/js/idb.js',
+  '/src/js/promise.js',
+  '/src/js/fetch.js',
+  '/src/js/material.min.js',
+  '/src/css/app.css',
+  '/src/css/feed.css',
+  '/src/images/main-image.jpg',
+  'https://fonts.googleapis.com/css?family=Roboto:400,700',
+  'https://fonts.googleapis.com/icon?family=Material+Icons',
+  'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
+]
 self.addEventListener('install', function(event) {
   console.log('[Service Worker] Installing Service Worker ...', event);
   event.waitUntil(
     caches.open(CACHE_STATIC_NAME)
       .then(function(cache) {
         console.log('[Service Worker] Precaching App Shell');
-        cache.addAll([
-          '/',
-          '/index.html',
-          '/offline.html',
-          '/src/js/app.js',
-          '/src/js/feed.js',
-          '/src/js/promise.js',
-          '/src/js/fetch.js',
-          '/src/js/material.min.js',
-          '/src/css/app.css',
-          '/src/css/feed.css',
-          '/src/images/main-image.jpg',
-          'https://fonts.googleapis.com/css?family=Roboto:400,700',
-          'https://fonts.googleapis.com/icon?family=Material+Icons',
-          'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
-        ]);
+        cache.addAll(STATIC_FILE);
       })
   )
 });
+
+const dbPromise = idb.open('posts-store', 1, db => {
+  console.log('masuk sini', db)
+  if (!db.objectStoreNames.contains('posts')) {
+    db.createObjectStore('posts', {keyPath: 'id'})
+  }
+})
+
+function isInArray(string, array) {
+  var cachePath;
+  if (string.indexOf(self.origin) === 0) { // request targets domain where we serve the page from (i.e. NOT a CDN)
+    console.log('matched ', string);
+    cachePath = string.substring(self.origin.length); // take the part of the URL AFTER the domain (e.g. after localhost:8080)
+  } else {
+    cachePath = string; // store the full request (for CDNs)
+  }
+  return array.indexOf(cachePath) > -1;
+}
 
 self.addEventListener('activate', function(event) {
   console.log('[Service Worker] Activating Service Worker ....', event);
@@ -45,7 +66,6 @@ self.addEventListener('activate', function(event) {
 });
 
 // *** OFFLINE-FALLBACK
-
 // self.addEventListener('fetch', function(event) {
 //   event.respondWith(
 //     caches.match(event.request)
@@ -121,22 +141,34 @@ self.addEventListener('activate', function(event) {
 
 // *** CACHE Then Network And Support Offline Fallback
 self.addEventListener('fetch', function(event) {
-  const url = 'https://httpbin.org/get'
+  const url = 'https://food-ninja-pwa-23296.firebaseio.com/posts'
 
   if (event.request.url.indexOf(url) > -1) {
     event.respondWith(
-      caches.open(CACHE_DYNAMIC_NAME)
-      .then(cache => {
-        return fetch(event.request)
-        .then(response => {
-          cache.put(event.request, response.clone())
-          return response
+      fetch(event.request).then(res => {
+        let cloneRes = res.clone()
+        cloneRes.json().then(data => {
+          for (let key in data) {
+            dbPromise.then (db => {
+              console.log('>>>', db)
+              let tx = db.transaction('posts', 'readwrite')
+              let store = tx.objectStore('posts')
+              store.put(data[key])
+
+              console.log('>>> tx', tx)
+              return tx.complete
+            })
+          }
         })
+
+        return res
       })
     );
-  }
-
-  else {
+  } else if (isInArray(event.request.url, STATIC_FILE)) {
+    event.respondWith(
+      caches.match(event.request)
+    );
+  } else {
     // Fallback with offline strategy
 
     event.respondWith(
@@ -147,11 +179,7 @@ self.addEventListener('fetch', function(event) {
           } else {
             return fetch(event.request)
               .then(function(res) {
-                return caches.open(CACHE_DYNAMIC_NAME)
-                  .then(function(cache) {
-                    cache.put(event.request.url, res.clone());
-                    return res;
-                  })
+                return res;
               })
               .catch(function(err) {
                 return caches.open(CACHE_STATIC_NAME)

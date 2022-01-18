@@ -47,23 +47,23 @@ function clearCard () {
   }
 }
 
-function createCard() {
+function createCard(data) {
   var cardWrapper = document.createElement('div');
   cardWrapper.className = 'shared-moment-card mdl-card mdl-shadow--2dp';
   var cardTitle = document.createElement('div');
   cardTitle.className = 'mdl-card__title';
-  cardTitle.style.backgroundImage = 'url("/src/images/sf-boat.jpg")';
+  cardTitle.style.backgroundImage = 'url('+ data.image +')';
   cardTitle.style.backgroundSize = 'cover';
   cardTitle.style.height = '180px';
   cardWrapper.appendChild(cardTitle);
   var cardTitleTextElement = document.createElement('h2');
   cardTitleTextElement.style.color = 'white';
   cardTitleTextElement.className = 'mdl-card__title-text';
-  cardTitleTextElement.textContent = 'San Francisco Trip';
+  cardTitleTextElement.textContent = data.title;
   cardTitle.appendChild(cardTitleTextElement);
   var cardSupportingText = document.createElement('div');
   cardSupportingText.className = 'mdl-card__supporting-text';
-  cardSupportingText.textContent = 'In San Francisco';
+  cardSupportingText.textContent = data.location;
   cardSupportingText.style.textAlign = 'center';
 
   // var cardSaveButton = document.createElement('button')
@@ -76,7 +76,13 @@ function createCard() {
   sharedMomentsArea.appendChild(cardWrapper);
 }
 
-const url = 'https://httpbin.org/get'
+function updateUI (datas) {
+  for (let data of datas) {
+    createCard(data)
+  }
+}
+
+const url = 'https://food-ninja-pwa-23296.firebaseio.com/posts.json'
 let networkDataReceived = false
 
 fetch(url)
@@ -84,10 +90,15 @@ fetch(url)
     return res.json();
   })
   .then(function(data) {
-    console.log('From Web')
+    console.log('From Web', data)
     networkDataReceived = true
     clearCard()
-    createCard();
+
+    let dataArray = []
+    for (let key in data) {
+      dataArray.push(data[key])
+    }
+    updateUI(dataArray);
   });
 
 if ('caches' in window) {
@@ -99,9 +110,14 @@ if ('caches' in window) {
   })
   .then(function(data) {
     if (!networkDataReceived) {
-      console.log('From Caches')
+      console.log('From Caches', data)
       clearCard()
-      createCard();
+
+      let dataArray = []
+      for (let key in data) {
+        dataArray.push(data[key])
+      }
+      updateUI(dataArray);
     }
   });
 }
