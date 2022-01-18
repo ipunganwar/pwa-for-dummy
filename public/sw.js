@@ -1,5 +1,6 @@
 
 importScripts('/src/js/idb.js')
+importScripts('/src/js/utils.js')
 
 var CACHE_STATIC_NAME = 'static-v7';
 var CACHE_DYNAMIC_NAME = 'dynamic-v2';
@@ -31,23 +32,6 @@ self.addEventListener('install', function(event) {
   )
 });
 
-const dbPromise = idb.open('posts-store', 1, db => {
-  console.log('masuk sini', db)
-  if (!db.objectStoreNames.contains('posts')) {
-    db.createObjectStore('posts', {keyPath: 'id'})
-  }
-})
-
-function isInArray(string, array) {
-  var cachePath;
-  if (string.indexOf(self.origin) === 0) { // request targets domain where we serve the page from (i.e. NOT a CDN)
-    console.log('matched ', string);
-    cachePath = string.substring(self.origin.length); // take the part of the URL AFTER the domain (e.g. after localhost:8080)
-  } else {
-    cachePath = string; // store the full request (for CDNs)
-  }
-  return array.indexOf(cachePath) > -1;
-}
 
 self.addEventListener('activate', function(event) {
   console.log('[Service Worker] Activating Service Worker ....', event);
@@ -149,15 +133,7 @@ self.addEventListener('fetch', function(event) {
         let cloneRes = res.clone()
         cloneRes.json().then(data => {
           for (let key in data) {
-            dbPromise.then (db => {
-              console.log('>>>', db)
-              let tx = db.transaction('posts', 'readwrite')
-              let store = tx.objectStore('posts')
-              store.put(data[key])
-
-              console.log('>>> tx', tx)
-              return tx.complete
-            })
+            writeData('posts', data[key])
           }
         })
 
